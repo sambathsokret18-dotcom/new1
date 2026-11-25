@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style id="tsp-global-loading-styles">
+      #tsp-global-loading { position:fixed; inset:0; z-index:200000; display:flex; align-items:center; justify-content:center; padding:22px; background:rgba(5,12,24,.58); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); opacity:1; visibility:visible; transition:opacity .18s ease,visibility .18s ease; }
+      #tsp-global-loading.tsp-loading-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+      #tsp-global-loading .tsp-loading-card { width:min(360px,100%); padding:25px 22px 22px; border:1px solid rgba(148,163,184,.28); border-radius:20px; color:#eaf2ff; text-align:center; background:linear-gradient(145deg,#101d32,#0b1425); box-shadow:0 24px 80px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.07); }
+      #tsp-global-loading .tsp-loading-spinner { width:43px;height:43px;margin:0 auto 15px;border-radius:50%;border:4px solid rgba(96,165,250,.2);border-top-color:#60a5fa;border-right-color:#38bdf8;animation:tspLoadingSpin .75s linear infinite; }
+      #tsp-global-loading .tsp-loading-title { margin:0 0 7px;font-size:16px;font-weight:800; }
+      #tsp-global-loading .tsp-loading-message { margin:0;color:#b8c7dd;font-size:12px;line-height:1.65; }
+      #tsp-global-loading .tsp-loading-track { height:4px;margin-top:18px;overflow:hidden;border-radius:99px;background:rgba(148,163,184,.16); }
+      #tsp-global-loading .tsp-loading-track::after { content:'';display:block;width:38%;height:100%;border-radius:99px;background:linear-gradient(90deg,#38bdf8,#818cf8);animation:tspLoadingTrack 1.15s ease-in-out infinite alternate; }
+      #tsp-network-status { position:fixed;left:50%;top:12px;z-index:199999;transform:translate(-50%,calc(-100% - 24px));max-width:calc(100vw - 24px);padding:9px 14px;border-radius:999px;background:#7f1d1d;color:#fff7ed;font-size:12px;font-weight:700;box-shadow:0 8px 26px rgba(0,0,0,.2);opacity:0;visibility:hidden;transition:transform .22s ease,opacity .22s ease,visibility .22s ease;pointer-events:none;text-align:center; }
+      #tsp-network-status.tsp-network-visible { transform:translate(-50%,0);opacity:1;visibility:visible; }
+      #tsp-network-status.tsp-network-online { background:#14532d;color:#dcfce7; }
+      body.tsp-global-busy { cursor:progress; }
+      @keyframes tspLoadingSpin { to { transform:rotate(360deg); } }
+      @keyframes tspLoadingTrack { from { transform:translateX(-10%); } to { transform:translateX(175%); } }
+      @media(prefers-reduced-motion:reduce) { #tsp-global-loading .tsp-loading-spinner,#tsp-global-loading .tsp-loading-track::after { animation-duration:2.5s; } }
+    </style>
+
+</head>
+<body>
+
+    <div id="tsp-global-loading" role="status" aria-live="polite" aria-atomic="true">
+      <div class="tsp-loading-card">
+        <div class="tsp-loading-spinner" aria-hidden="true"></div>
+        <p class="tsp-loading-title" id="tsp-loading-title">កំពុងបើក TimeStudyPro...</p>
+        <p class="tsp-loading-message" id="tsp-loading-message">សូមរង់ចាំ ខណៈកម្មវិធីកំពុងរៀបចំទិន្នន័យ និងធនធានចាំបាច់។</p>
+        <div class="tsp-loading-track" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div id="tsp-network-status" role="status" aria-live="polite"></div>
+
+
+    <!-- Mobile navigation toggle (hidden on desktop) -->
+    <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="បើកម៉ឺនុយ" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+    <div class="mobile-sidebar-backdrop" id="mobile-sidebar-backdrop" hidden></div>
+
+    <!-- Sidebar Section -->
+    <div class="sidebar" id="app-sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-gear"></i> Dashboard
+        </div>
+        <ul>
+            <li><a href="#" class="active" data-page="home-page"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="#" data-page="time-page"><i class="fa-solid fa-clock"></i> Time Observe</a></li>
+            <li><a href="#" data-page="clone-page"><i class="fa-solid fa-clone"></i> Clone File</a></li>
+            <li><a href="#" data-page="edit-page"><i class="fa-solid fa-pen-to-square"></i> Edit File</a></li>
+            <li class="sidebar-dashboard-group" id="sidebar-dashboard-group">
+                <div class="sidebar-dashboard-main">
+                    <a href="#" data-page="dashboard-page"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+                    <button type="button" class="sidebar-submenu-toggle" id="dashboard-submenu-toggle" aria-label="បើក Menu Dashboard" aria-expanded="false" aria-controls="dashboard-submenu"><i class="fa-solid fa-chevron-down"></i></button>
+                </div>
+                <ul class="sidebar-submenu" id="dashboard-submenu" hidden>
+                    <li><a href="#" data-dashboard-action="smart-alert"><i class="fa-solid fa-bell"></i><span>MOC Smart Alert</span></a></li>
+                    <li><a href="#" data-dashboard-action="improvement"><i class="fa-solid fa-screwdriver-wrench"></i><span>Process Improvement</span></a></li>
+                    <li><a href="#" data-dashboard-action="compare-day"><i class="fa-solid fa-calendar-days"></i><span>Compare Day</span></a></li>
+                    <li><a href="#" data-dashboard-action="export-report"><i class="fa-solid fa-file-excel"></i><span>Export MOC Report</span></a></li>
+                </ul>
+            </li>
+            <li><a href="#" data-page="upload-page"><i class="fa-solid fa-upload"></i> Upload File</a></li>
+            <li><a href="#" data-page="production-page"><i class="fa-solid fa-industry"></i> Production Monitor</a></li>
+            <li><a href="#" data-page="workers-page"><i class="fa-solid fa-users-gear"></i> Worker Management</a></li>
+            <li><a href="#" data-page="efficiency-page"><i class="fa-solid fa-gauge-high"></i> Efficiency</a></li>
+            <li><a href="#" data-page="line-balance-page"><i class="fa-solid fa-scale-balanced"></i> Line Balancing</a></li>
+            <li><a href="#" data-page="daily-report-page"><i class="fa-solid fa-clipboard-list"></i> Daily Report</a></li>
+            <li><a href="#" data-page="sewing-layout-page"><i class="fa-solid fa-person-booth"></i> Sewing Line Layout</a></li>
+        </ul>
+    </div>
+
+
+    <!-- Mobile-only Glass navigation: primary destinations + More sheet -->
+    <nav class="mobile-bottom-nav" aria-label="Main navigation">
+        <a href="#" data-page="home-page" aria-label="Home"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="#" data-page="dashboard-page" aria-label="Dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+        <a href="#" data-page="time-page" aria-label="Time Observe"><i class="fa-solid fa-clock"></i><span>Time Observe</span></a>
+        <button type="button" id="mobile-more-toggle" aria-expanded="false" aria-controls="mobile-more-sheet"><i class="fa-solid fa-ellipsis"></i><span>More</span></button>
+    </nav>
+    <div class="mobile-more-backdrop" id="mobile-more-backdrop" hidden></div>
+    <section class="mobile-more-sheet" id="mobile-more-sheet" aria-label="More Menu" aria-hidden="true">
+        <div class="mobile-more-handle"></div>
+        <div class="mobile-more-heading"><div><span class="mobile-more-eyebrow">TIMESTUDYPRO WORKSPACE</span><strong>មុខងារទាំងអស់</strong><small>ជ្រើសរើសឧបករណ៍ដែលអ្នកត្រូវការ</small></div><button type="button" id="mobile-more-close" aria-label="បិទម៉ឺនុយ"><i class="fa-solid fa-xmark"></i></button></div>
+        <label class="mobile-more-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="mobile-more-search-input" type="search" placeholder="ស្វែងរកមុខងារ..." autocomplete="off" aria-label="ស្វែងរកមុខងារ"><kbd>⌕</kbd></label>
+        <div class="mobile-more-section-label">DASHBOARD TOOLS</div>
+        <section class="mobile-dashboard-submenu" id="mobile-dashboard-submenu-group" aria-label="Dashboard submenu">
+            <button type="button" class="mobile-dashboard-submenu-toggle" id="mobile-dashboard-submenu-toggle" aria-expanded="false" aria-controls="mobile-dashboard-submenu-list">
+                <span><i class="fa-solid fa-chart-line"></i> Menu Dashboard</span><i class="fa-solid fa-chevron-down mobile-dashboard-chevron"></i>
+            </button>
+            <div class="mobile-dashboard-submenu-list" id="mobile-dashboard-submenu-list" hidden>
+                <a href="#" data-dashboard-action="smart-alert"><i class="fa-solid fa-bell"></i><span>MOC Smart Alert</span></a>
+                <a href="#" data-dashboard-action="improvement"><i class="fa-solid fa-screwdriver-wrench"></i><span>Process Improvement</span></a>
+                <a href="#" data-dashboard-action="compare-day"><i class="fa-solid fa-calendar-days"></i><span>Compare Day</span></a>
+                <a href="#" data-dashboard-action="export-report"><i class="fa-solid fa-file-excel"></i><span>Export MOC Report</span></a>
+            </div>
+        </section>
+        <div class="mobile-more-section-label mobile-more-all-label">ALL TOOLS</div>
+        <div class="mobile-more-grid">
+            <button type="button" data-mobile-action="page" data-page="clone-page"><i class="fa-solid fa-clone"></i><span>Clone Day</span></button>
+            <button type="button" data-mobile-action="page" data-page="upload-page"><i class="fa-solid fa-cloud-arrow-up"></i><span>Upload File</span></button>
+            <button type="button" data-mobile-action="page" data-page="edit-page"><i class="fa-solid fa-pen-to-square"></i><span>Edit File</span></button>
+            <button type="button" data-mobile-action="profile"><i class="fa-regular fa-id-card"></i><span>My Profile</span></button>
+            <button type="button" data-mobile-action="settings"><i class="fa-solid fa-sliders"></i><span>Settings</span></button>
+            <button type="button" data-mobile-action="search"><i class="fa-solid fa-magnifying-glass"></i><span>Quick Search</span></button>
+            <button type="button" data-mobile-action="filters"><i class="fa-solid fa-filter"></i><span>Quick Filters</span></button>
+            <button type="button" data-mobile-action="page" data-page="production-page"><i class="fa-solid fa-industry"></i><span>Production Monitor</span></button>
+            <button type="button" data-mobile-action="page" data-page="workers-page"><i class="fa-solid fa-users-gear"></i><span>Worker Management</span></button>
+            <button type="button" data-mobile-action="page" data-page="efficiency-page"><i class="fa-solid fa-gauge-high"></i><span>Efficiency</span></button>
+            <button type="button" data-mobile-action="page" data-page="line-balance-page"><i class="fa-solid fa-scale-balanced"></i><span>Line Balancing</span></button>
+            <button type="button" data-mobile-action="page" data-page="daily-report-page"><i class="fa-solid fa-clipboard-list"></i><span>Daily Report</span></button>
+            <button type="button" data-mobile-action="page" data-page="sewing-layout-page"><i class="fa-solid fa-person-booth"></i><span>Sewing Line Layout</span></button>
+        </div>
+    </section>
+
+    <!-- Main Wrapper Section -->
+    <div class="main-wrapper">
+        
+        <!-- Header Section -->
+        <header class="tsp-app-header">
+            <button type="button" class="tsp-sidebar-toggle" id="tsp-sidebar-toggle" aria-label="លាក់ Menu Sidebar" aria-pressed="false" title="លាក់/បង្ហាញ Menu Sidebar"><i class="fa-solid fa-bars-staggered"></i></button>
+            <div class="tsp-header-brand" aria-label="TimeStudyPro">
+                <span class="tsp-header-logo"><i class="fa-solid fa-stopwatch"></i></span>
+                <span class="tsp-header-brand-text"><strong>TimeStudyPro</strong><small>Time Study Workspace</small></span>
+            </div>
+            <div class="tsp-header-current-page" aria-live="polite">
+                <small>CURRENT PAGE</small>
+                <strong id="tsp-current-page-name">Home</strong>
+            </div>
+            <div class="user-menu tsp-header-actions">
+                <button type="button" class="tsp-header-icon-btn" id="notification-btn" aria-label="Notifications" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+                <div class="profile" id="profile-btn" role="button" tabindex="0" aria-label="My Profile">
+                    <!-- <img src="SOKRET.png.jpg" alt="Profile"> -->
+                    <span>SOKRET11<i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            
+            <!-- 1. ផ្ទាំង Home Page -->
+            <div id="home-page" class="page-content">
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon card-1 icon"><i class="fa-solid fa-chart-simple"></i></div>
+                        <div class="card-info">
+                            <h3>Total File Upload</h3>
+                            <p id="total-file-count">0</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon card-2 icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <div class="card-info">
+                            <h3>Total Groups</h3>
+                            <p>0</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon card-3 icon"><i class="fa-solid fa-users"></i></div>
+                        <div class="card-info">
+                            <h3>Total Users</h3>
+                            <p>0</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon card-4 icon"><i class="fa-solid fa-box"></i></div>
+                        <div class="card-info">
+                            <h3>Total Products</h3>
+                            <p>0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ផ្ទាំង Upload File Page -->
+            <div id="upload-page" class="page-content" style="display: none;">
+                <div class="upload-container">
+                    <h2><i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Upload Excel File</h2>
+                    <p>សូមជ្រើសរើស ឬទម្លាក់ឯកសារ Excel ( .xlsx, .xls ) របស់អ្នកទីនេះ៖</p>
+                    
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="drop-zone" id="drop-zone">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>អូសទម្លាក់ឯកសារទីនេះ ឬ <b>រើសឯកសារ</b></span>
+                            <input type="file" id="excel-file" accept=".xlsx, .xls" hidden>
+                        </div>
+                        
+                        <div id="file-info" class="file-info" style="display: none;">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span id="file-name">filename.xlsx</span>
+                            <button type="button" id="remove-file" aria-label="ដក File ចេញ"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div id="upload-progress-wrap" class="upload-progress-wrap" hidden aria-live="polite">
+                            <div class="upload-progress-label"><span id="upload-progress-text">កំពុងពិនិត្យ File...</span><b id="upload-progress-percent">0%</b></div>
+                            <progress id="upload-progress" max="100" value="0"></progress>
+                        </div>
+
+                        <button type="submit" class="upload-btn">Upload ចូលប្រព័ន្ធ</button>
+                    </form>
+                </div>
+
+                <div class="uploaded-files-section">
+                    <h3><i class="fa-solid fa-list-check"></i> បញ្ជីឯកសារដែលបាន Upload រួច ( Total File: <span id="file-count">0</span> )</h3>
+                    
+                    <div class="upload-storage-summary" aria-live="polite">
+                        <div><i class="fa-solid fa-folder-open"></i><span><small>ចំនួន File</small><b id="upload-storage-count">0</b></span></div>
+                        <div><i class="fa-solid fa-database"></i><span><small>ទំហំទិន្នន័យប្រហែល</small><b id="upload-storage-size">0 B</b></span></div>
+                    </div>
+                    <div class="uploaded-files-toolbar">
+                        <label class="uploaded-file-search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input id="uploaded-file-search" type="search" placeholder="ស្វែងរកតាមឈ្មោះ File ឬអ្នក Upload..."></label>
+                        <label class="upload-filter-label"><i class="fa-solid fa-filter"></i><select id="uploaded-file-type-filter" aria-label="ច្រោះប្រភេទ File"><option value="all">គ្រប់ប្រភេទ</option><option value="xls">Excel .xls</option><option value="xlsx">Excel .xlsx</option></select></label>
+                        <label class="upload-filter-label"><i class="fa-solid fa-arrow-down-wide-short"></i><select id="uploaded-file-sort" aria-label="តម្រៀប File"><option value="newest">ថ្មីបំផុត</option><option value="oldest">ចាស់បំផុត</option><option value="name-asc">ឈ្មោះ A–Z</option><option value="name-desc">ឈ្មោះ Z–A</option><option value="size-desc">ទំហំធំទៅតូច</option><option value="size-asc">ទំហំតូចទៅធំ</option></select></label>
+                        <button type="button" id="uploaded-file-month-filter" class="action-btn upload-month-filter" aria-label="ច្រោះ File តាមខែ និងឆ្នាំ"><i class="fa-solid fa-calendar-days"></i> <span id="uploaded-file-month-filter-label">ខែ / ឆ្នាំ</span></button>
+                        
+                    </div>
+                    <div class="upload-management-toolbar">
+                        <div class="upload-view-toggle" role="group" aria-label="របៀបបង្ហាញ File">
+                            <button type="button" id="upload-view-list" class="active" aria-label="List view" title="List view" aria-pressed="true"><i class="fa-solid fa-list"></i> List</button>
+                            <button type="button" id="upload-view-grid" aria-label="Grid view" title="Grid view" aria-pressed="false"><i class="fa-solid fa-grip"></i> Grid</button>
+                        </div>
+                        <div class="upload-management-actions">
+                            <button type="button" id="upload-open-trash" class="action-btn" aria-label="Recycle Bin" title="Recycle Bin"><i class="fa-solid fa-trash-arrow-up"></i> Recycle Bin</button>
+                            <button type="button" id="upload-storage-dashboard" class="action-btn" aria-label="Storage" title="Storage"><i class="fa-solid fa-chart-pie"></i> Storage</button>
+                            <button type="button" id="upload-activity-log" class="action-btn" aria-label="Activity Log" title="Activity Log"><i class="fa-solid fa-clock-rotate-left"></i> Activity Log</button>
+                            <button type="button" id="upload-permissions" class="action-btn" aria-label="Permissions" title="Permissions"><i class="fa-solid fa-user-shield"></i> Permissions</button>
+                        </div>
+                    </div>
+                    <div id="uploaded-files-grid" class="uploaded-files-grid" hidden></div>
+                    <div class="upload-bulk-toolbar" id="upload-bulk-toolbar">
+                        <label><input type="checkbox" id="upload-select-all"> ជ្រើសរើសទាំងអស់</label>
+                        <span id="upload-selected-count">បានជ្រើស 0 File</span>
+                        <button type="button" id="upload-bulk-download" class="action-btn download-btn-action" aria-label="Download Selected" title="Download Selected"><i class="fa-solid fa-download"></i> Download Selected</button>
+                        <button type="button" id="upload-bulk-delete" class="action-btn delete-btn-action" aria-label="Delete Selected" title="Delete Selected"><i class="fa-solid fa-trash"></i> Delete Selected</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="files-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="upload-table-select-all" aria-label="ជ្រើសរើស File ទាំងអស់"></th>
+                                    <th>N°</th>
+                                    <th>User</th>
+                                    <th>Name File Excel</th>
+                                    <th>Date Upload</th>
+                                    <th>Action</th>
+                                    <th>Download</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="files-table-body">
+                                <tr id="empty-row">
+                                    <td colspan="8" style="text-align: center; color: #9ca3af;">មិនទាន់មានឯកសារត្រូវបាន Upload នៅឡើយទេ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ផ្ទាំង Time Observe Page -->
+            <div id="time-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header">
+                        <h2><i class="fa-solid fa-clock-rotate-left"></i> MASTER SECT (TIME OBSERVE)</h2>
+                    </div>
+
+                    <div class="observe-search-box observe-factory-toolbar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="section-search-input" placeholder="Search Section / Title...">
+                        <button type="button" id="time-observe-factory-refresh" class="time-observe-factory-refresh" title="Refresh all Time Observe lists" aria-label="Refresh all Time Observe lists"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+                    </div>
+
+                    <div class="observe-list-wrapper" id="section-list-container">
+                        <div class="empty-observe-state">
+                            <p>សូម Upload ហ្វាល Excel ជាមុនសិន ដើម្បីទាញយកទិន្នន័យ Master Sect!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3.1 ផ្ទាំង Section List Page -->
+            <div id="section-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header observe-header-flex">
+                        <div class="observe-header-left">
+                            <button id="back-to-observe-btn" class="modal-btn modal-btn-secondary back-btn-style"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button>
+                            <h2 id="section-page-title" style="margin: 0;"><i class="fa-solid fa-layer-group"></i> SECTIONS</h2>
+                        </div>
+                    </div>
+
+                    <div class="observe-search-box" style="margin-top: 20px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="section-item-search-input" placeholder="Search Section...">
+                        <button type="button" id="section-item-refresh" class="time-observe-factory-refresh" title="Refresh Section list" aria-label="Refresh Section list"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+                    </div>
+
+                    <div class="observe-list-wrapper" id="section-item-list-container"></div>
+                </div>
+            </div>
+
+            <!-- 3.2 ផ្ទាំង Style List Page -->
+            <div id="style-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header observe-header-flex">
+                        <div class="observe-header-left">
+                            <button id="back-to-section-btn" class="modal-btn modal-btn-secondary back-btn-style"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button>
+                            <h2 id="style-page-title" style="margin: 0;"><i class="fa-solid fa-shirt"></i> STYLES</h2>
+                        </div>
+                    </div>
+
+                    <div class="observe-search-box" style="margin-top: 20px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="style-item-search-input" placeholder="Search Style...">
+                        <button type="button" id="style-item-refresh" class="time-observe-factory-refresh" title="Refresh Style list" aria-label="Refresh Style list"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+                    </div>
+
+                    <div class="observe-list-wrapper" id="style-item-list-container"></div>
+                </div>
+            </div>
+
+            <!-- 3.3 ផ្ទាំង RampupDay Page -->
+            <div id="rampup-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header observe-header-flex">
+                        <div class="observe-header-left">
+                            <button id="back-to-style-btn" class="modal-btn modal-btn-secondary back-btn-style"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button>
+                            <h2 id="rampup-page-title" style="margin: 0;"><i class="fa-solid fa-calendar-day"></i> RAMPUP DAYS</h2>
+                        </div>
+                    </div>
+
+                    <div class="observe-search-box" style="margin-top: 20px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="rampup-item-search-input" placeholder="Search RampupDay...">
+                        <button type="button" id="rampup-item-refresh" class="time-observe-factory-refresh" title="Refresh RampupDay list" aria-label="Refresh RampupDay list"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+                    </div>
+
+                    <div class="observe-list-wrapper" id="rampup-item-list-container"></div>
+                </div>
+            </div>
+
+            <!-- 3.4 ផ្ទាំង Prep_Assembly Page -->
+            <div id="prep-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header observe-header-flex">
+                        <div class="observe-header-left">
+                            <button id="back-to-rampup-btn" class="modal-btn modal-btn-secondary back-btn-style"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button>
+                            <h2 id="prep-page-title" style="margin: 0;"><i class="fa-solid fa-list-check"></i> Prep / Assembly</h2>
+                        </div>
+                    </div>
+
+                    <div class="prep-header-actions" style="margin-top: 20px; display: flex; align-items: center; gap: 12px;">
+                        <div class="prep-search-box" style="flex: 1; display: flex; align-items: center; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 14px;">
+                            <i class="fa-solid fa-magnifying-glass" style="color: #64748b;"></i>
+                            <input type="text" id="prep-item-search-input" placeholder="Search Prep / PrimaryKey..." style="border: none; background: transparent; outline: none; width: 100%; margin-left: 10px; font-size: 14px; color: #1e293b;">
+                        </div>
+                        <button id="refresh-prep-btn" class="refresh-btn-action" type="button" title="Refresh Time Observe Data" aria-label="Refresh Time Observe Data" style="background-color: #f8fafc; border: 1px solid #cbd5e1; color: #475569; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap;">
+                            <i class="fa-solid fa-rotate"></i><span>Refresh</span>
+                        </button>
+                        <button id="clone-selected-groups-btn" type="button" title="ជ្រើស Group រួចចុចដើម្បី Clone" style="background:linear-gradient(135deg,#16a34a,#15803d);border:1px solid #15803d;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;white-space:nowrap;box-shadow:0 2px 5px rgba(21,128,61,.18);">
+                            <i class="fa-solid fa-clone" aria-hidden="true"></i><span>Clone</span>
+                        </button>
+                        <button class="ts-moc-btn" type="button" onclick="openTimeObserveMOCModal()" aria-label="MOC Process PFM Summary" title="MOC — សរុប Process តាមកម្រិត PFM">
+                            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>MOC</span>
+                        </button>
+                    </div>
+
+                    <div class="observe-list-wrapper" id="prep-item-list-container" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+
+            <!-- 3.5 ផ្ទាំង Process Page -->
+            <div id="process-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header observe-header-flex">
+                        <div class="observe-header-left">
+                            <button id="back-to-prep-btn" class="modal-btn modal-btn-secondary back-btn-style"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button>
+                            <h2 id="process-page-title" style="margin: 0;"><i class="fa-solid fa-list-check"></i> PROCESSES</h2>
+                        </div>
+                    </div>
+
+                    <div class="prep-header-actions" style="margin-top: 20px; display: flex; align-items: center; gap: 12px;">
+                        <div class="prep-search-box" style="flex: 1; display: flex; align-items: center; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 14px;">
+                            <i class="fa-solid fa-magnifying-glass" style="color: #64748b;"></i>
+                            <input type="text" id="process-item-search-input" placeholder="Search Process..." style="border: none; background: transparent; outline: none; width: 100%; margin-left: 10px; font-size: 14px; color: #1e293b;">
+                        </div>
+                    </div>
+
+                    <div class="observe-list-wrapper" id="process-item-list-container" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+
+            <!-- 3.6 ផ្ទាំង Time Study Form Page -->
+            <div id="timestudy-page" class="page-content" style="display: none;">
+                <div class="observe-container">
+                    <div class="observe-header observe-header-flex">
+                        <div class="observe-header-left">
+                            <button id="back-to-process-btn" class="modal-btn modal-btn-secondary back-btn-style"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button>
+                            <h2 id="timestudy-page-title" style="margin: 0;"><i class="fa-solid fa-stopwatch"></i> TIME STUDY OBSERVATION</h2>
+                        </div>
+                    </div>
+
+                    <!-- Info Card -->
+                    <div class="ts-info-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                        <div>
+                            <div id="ts-process-khmer" class="ts-info-khmer" style="font-weight: bold; font-size: 16px;">-</div>
+                            <div id="ts-process-thai" class="ts-info-thai" style="color: #64748b; font-size: 13px; margin-bottom: 8px;">-</div>
+                            <div class="ts-info-details" style="display: flex; gap: 15px; font-size: 13px; color: #334155; align-items: center;">
+                                <div><b>PrimaryKey:</b> <span id="ts-primary-key">-</span></div>
+                                <div><b>SMV:</b> <span id="ts-smv" style="font-weight: bold; color: #2563eb;">-</span></div>
+                                <div><b>Sewer:</b> <span id="ts-sewer-badge" style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 6px; font-weight: bold;">-</span></div>
+                            </div>
+                        </div>
+                        <div class="ts-observe-actions">
+                            <button class="ts-edit-data-btn" onclick="openTimeObserveEditModal()" style="background: #2563eb; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(37,99,235,0.2);">
+                                <i class="fa-solid fa-pen-to-square"></i><span class="ts-action-label">Edit Data</span>
+                            </button>
+                            <button class="ts-clone-data-btn" onclick="openTimeObserveCloneModal()" aria-label="Clone Process" title="Clone Process">
+                                <i class="fa-solid fa-clone"></i><span class="ts-action-label">Clone</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ts-stopwatch-card">
+                        <div id="stopwatch-display" class="stopwatch-display">00:00.00</div>
+                        
+                        <div class="ts-buttons-wrapper">
+                            <button id="ts-main-action-btn" class="modal-btn modal-btn-primary ts-btn" aria-label="Start" title="Start" style="background-color: #10b981;"><i class="fa-solid fa-play"></i></button>
+                            <button id="ts-lap-btn" class="modal-btn modal-btn-secondary ts-btn" aria-label="Lap" title="Lap" disabled style="color: #94a3b8;"><i class="fa-solid fa-flag"></i></button>
+                        </div>
+
+                        <div id="lap-boxes-section" class="lap-boxes-section" aria-live="polite">
+                            <div class="lap-boxes-heading"><strong>Lap Records</strong><span id="lap-count-badge" class="lap-count-badge">0/5</span></div>
+                            <div id="lap-boxes-container" class="lap-boxes-container"><div class="lap-box-empty">ចុច Lap ដើម្បីកត់ត្រាពេលវេលា</div></div>
+                        </div>
+                        <div class="table-responsive lap-table-desktop" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;">
+                            <table class="files-table" style="width: 100%; text-align: left;">
+                                <thead>
+                                    <tr>
+                                        <th>Round</th>
+                                        <th>Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lap-table-body">
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; color: #94a3b8;">មិនទាន់មានទិន្នន័យចាប់ម៉ោងនៅឡើយទេ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button id="ts-save-btn" class="ts-save-btn">
+                            <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> រក្សាទុកទិន្នន័យ (Save to Dashboard)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Clone Day — Smart Merge -->
+            <div id="clone-page" class="page-content" style="display: none;">
+                <section class="clone-day-shell">
+                    <div class="clone-day-heading">
+                        <div class="clone-day-heading-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                        <div><h2>Clone Day <span>Smart Merge</span></h2><p>ចម្លង Process ពីថ្ងៃដើមទៅថ្ងៃគោលដៅ ដោយរក្សាទិន្នន័យចាស់ និងពិនិត្យស្ទួនជាមុន។</p></div>
+                    </div>
+                    <div class="clone-day-steps" aria-label="Clone Day steps">
+                        <div class="clone-step is-active" data-clone-step="1"><b>1</b><span>Source Day</span></div>
+                        <span class="clone-step-line" aria-hidden="true"></span>
+                        <div class="clone-step" data-clone-step="2"><b>2</b><span>Target Day</span></div>
+                        <span class="clone-step-line" aria-hidden="true"></span>
+                        <div class="clone-step" data-clone-step="3"><b>3</b><span>Confirm Clone</span></div>
+                    </div>
+                    <div class="clone-wizard-panel" data-clone-panel="1">
+                        <div class="clone-day-card clone-wizard-card">
+                            <div class="clone-day-card-title"><i class="fa-solid fa-calendar-day"></i><div><h3>1. ជ្រើស File និង Source Day</h3><p>ជ្រើស File ជាមុន បន្ទាប់មកជ្រើសថ្ងៃដើមដែលមាន Process ដែលអ្នកចង់ចម្លង។</p></div></div>
+                            <div class="clone-source-file-field">
+                                <label for="clone-source-file">ជ្រើស File ទិន្នន័យ</label>
+                                <div class="clone-source-file-control-row">
+                                    <select id="clone-source-file"><option value="">— ជ្រើស File ទិន្នន័យ —</option></select>
+                                    <button type="button" id="clone-reset-btn" class="clone-btn-light clone-inline-reset"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                                </div>
+                            </div>
+                            <div class="clone-source-panel clone-source-panel-primary">
+                                <div id="clone-source-browser" class="clone-source-browser" hidden>
+                                    <div class="clone-source-browser-head"><div><h4>ថ្ងៃដែលមានក្នុង File</h4></div></div>
+                                    <div id="clone-source-day-list" class="clone-source-day-list"></div>
+                                </div>
+                                <div class="clone-source-empty-hint" id="clone-source-first-hint">សូមជ្រើស File ទិន្នន័យ ដើម្បីបង្ហាញថ្ងៃដើម។</div>
+                            </div>
+                            <div class="clone-wizard-footer"><span class="clone-wizard-hint"><i class="fa-solid fa-circle-info"></i> ជ្រើស File និង Source Day មួយ ដើម្បីបន្ត។</span><button type="button" id="clone-next-source" class="clone-btn-primary" disabled>បន្ទាប់ <i class="fa-solid fa-arrow-right"></i></button></div>
+                            <label style="display:none">Source Day<select id="clone-source-day" disabled><option value="">— ជ្រើសថ្ងៃដើម —</option></select></label>
+                        </div>
+                    </div>
+                    <div class="clone-wizard-panel" data-clone-panel="2" hidden>
+                        <div class="clone-day-card clone-wizard-card">
+                            <div class="clone-day-card-title"><i class="fa-solid fa-calendar-plus"></i><div><h3>2. កំណត់ Target Day</h3><p>បញ្ចូលថ្ងៃគោលដៅ និងកែព័ត៌មានដែលត្រូវការ មុនពេលបញ្ជាក់ Clone។</p></div></div>
+                            <div class="clone-target-field">
+                                <label for="clone-target-days">Target Day(s)</label>
+                                <div class="clone-target-control-row"><input id="clone-target-days" type="text" disabled placeholder="ឧ. Day 2, Day 3"></div>
+                                <small>អាចបញ្ចូលច្រើនថ្ងៃដោយបំបែកជាមួយសញ្ញាក្បៀស។ ទិន្នន័យដែលមានរួចនឹងមិនត្រូវបានសរសេរជាន់ទេ ហើយ Process ស្ទួននឹងត្រូវរំលង។</small>
+                            </div>
+                            <div class="clone-source-panel clone-source-panel-secondary" id="clone-source-panel-secondary" hidden>
+                                <div id="clone-source-browser-secondary" class="clone-source-browser">
+                                    <div class="clone-source-browser-head clone-source-edit-header"><div><h4>កែទិន្នន័យមុន Clone</h4></div><button type="button" class="clone-btn-primary" id="clone-source-save-preview"><i class="fa-solid fa-floppy-disk"></i> Save & Continue</button></div>
+                                    <div id="clone-source-day-list-secondary" class="clone-source-day-list"></div>
+                                </div>
+                            </div>
+                            <div class="clone-source-empty-hint clone-source-secondary-hint" id="clone-source-secondary-hint" hidden>ជ្រើស Source Day មួយនៅជំហានទី១ ដើម្បីបើកជម្រើសកែទិន្នន័យ។</div>
+                            <div class="clone-wizard-footer"><button type="button" id="clone-back-target" class="clone-btn-light"><i class="fa-solid fa-arrow-left"></i> ថយក្រោយ</button><span class="clone-wizard-hint"><i class="fa-solid fa-shield-halved"></i> ព័ត៌មាននឹងត្រូវសង្ខេបមុនពេល Clone។</span><button type="button" id="clone-preview-btn" class="clone-btn-primary" disabled>បន្ទាប់ <i class="fa-solid fa-arrow-right"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="clone-wizard-panel" data-clone-panel="3" hidden>
+                        <div id="clone-preview-panel" class="clone-day-card clone-results-panel" hidden></div>
+                    </div>
+                    <div class="clone-wizard-panel" data-clone-panel="4" hidden>
+                        <div id="clone-report-panel" class="clone-day-card clone-report-panel" hidden></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 5. ផ្ទាំង Edit File Page -->
+            <div id="edit-page" class="page-content" style="display: none;">
+                <h2>Edit File Page</h2>
+            </div>
+
+            <!-- 6. ផ្ទាំង Dashboard Analysis Page -->
+            <div id="dashboard-page" class="page-content" style="display: none;"></div>
+
+            <!-- Sewing Line Layout: isolated workspace; existing TimeStudyPro pages remain unchanged. -->
+            <section id="sewing-layout-page" class="page-content" style="display:none;" aria-label="Sewing Line Layout">
+                <div class="sll-header">
+                    <div><h2><i class="fa-solid fa-person-booth"></i> Sewing Line Layout</h2><p>រៀបចំប្លង់ខ្សែដេរ · អូសមនុស្ស និងម៉ាស៊ីនដោយឡែកពីគ្នា</p></div>
+                    <div class="sll-actions"><button type="button" id="sll-save"><i class="fa-solid fa-floppy-disk"></i> Save Layout</button><button type="button" id="sll-load"><i class="fa-solid fa-folder-open"></i> Load</button><button type="button" id="sll-clear"><i class="fa-regular fa-trash-can"></i> Clear</button></div>
+                </div>
+                <div class="sll-context">
+                    <label>Factory<input id="sll-factory" placeholder="ឧ. KKN4"></label>
+                    <label>Section<input id="sll-section" placeholder="ឧ. Sewing"></label>
+                    <label>Style<input id="sll-style" placeholder="ឧ. A100"></label>
+                    <span class="sll-shared-note"><i class="fa-solid fa-circle-info"></i> ប្លង់តែមួយសម្រាប់គ្រប់ Rampup Day នៃ Style ដដែល</span>
+                </div>
+                <div class="sll-workspace">
+                    <aside class="sll-toolbox">
+                        <h3>បន្ថែមវត្ថុ</h3>
+                        <button type="button" id="sll-add-person"><i class="fa-solid fa-person"></i> បន្ថែមមនុស្ស</button>
+                        <button type="button" id="sll-add-machine"><i class="fa-solid fa-gears"></i> បន្ថែមម៉ាស៊ីន</button>
+                        <label class="sll-upload"> <i class="fa-solid fa-image"></i> បញ្ចូលរូបភាពផ្ទាល់<input type="file" id="sll-image-upload" accept="image/*" hidden></label>
+                        <p class="sll-hint">ចុចលើវត្ថុដើម្បីជ្រើសរើស រួចអូសដើម្បីផ្លាស់ទី។ មនុស្ស និងម៉ាស៊ីនអាចបង្វិលដោយឡែកពីគ្នា។</p>
+                        <div class="sll-editor" id="sll-editor" hidden>
+                            <h3>កែវត្ថុដែលបានជ្រើស</h3>
+                            <label>ឈ្មោះ<input id="sll-object-label" placeholder="ឈ្មោះ ឬ Process"></label>
+                            <label>មុំបង្វិល <output id="sll-rotation-value">0°</output><input id="sll-rotation" type="range" min="0" max="359" value="0"></label>
+                            <div class="sll-rotate-buttons"><button type="button" id="sll-rotate-left">↶ 15°</button><button type="button" id="sll-rotate-right">↷ 15°</button></div>
+                            <label>ទំហំ <output id="sll-size-value">76 px</output><input id="sll-size" type="range" min="40" max="150" value="76"></label>
+                            <button type="button" id="sll-delete-object" class="sll-danger"><i class="fa-solid fa-trash"></i> លុបវត្ថុ</button>
+                        </div>
+                    </aside>
+                    <div class="sll-canvas-wrap"><div id="sll-canvas" class="sll-canvas" aria-label="ប្លង់រោងចក្រដែលអាចអូសវត្ថុបាន"><div class="sll-canvas-watermark">SEWING LINE FLOOR PLAN</div></div></div>
+                </div>
+                <div id="sll-status" class="sll-status" role="status">បន្ថែមមនុស្ស ឬម៉ាស៊ីន ដើម្បីចាប់ផ្តើមរៀបចំប្លង់។</div>
+            </section>
+
+            <!-- MOC Smart Alert is shown only from the Dashboard submenu -->
+            <section id="moc-smart-alert-page" class="page-content" style="display:none;" aria-label="MOC Smart Alert">
+                <div class="observe-container">
+                    <div class="observe-header">
+                        <h2><i class="fa-solid fa-bell" style="color:#2563eb"></i> MOC Smart Alert</h2>
+                        <p>Target 85% · ស្ថានភាព MOC និងក្រុមដែលត្រូវកែលម្អ</p>
+                    </div>
+                    <div class="dash-filter-grid" style="background:#e0f2fe;padding:15px;border-radius:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;border:1px solid #bae6fd;">
+                        <div id="moc-alert-filter-placeholder" style="color:#475569;font-size:12px;">សូមជ្រើស Filter នៅ Dashboard មុនពេលពិនិត្យ MOC Smart Alert។</div>
+                    </div>
+                    <section id="dash-moc-smart-alert" class="dash-moc-alert" aria-live="polite"></section>
+                </div>
+            </section>
+
+            <!-- New factory workflow pages: shared across desktop and mobile -->
+            <section id="production-page" class="page-content tsp-factory-page" style="display:none;" aria-label="Production Monitor">
+                <div class="tsp-module-heading"><div><span class="tsp-module-eyebrow">FACTORY OPERATIONS</span><h2><i class="fa-solid fa-industry"></i> Production Monitor</h2><p>កត់ត្រា Target និង Actual ផលិតកម្មប្រចាំថ្ងៃ</p></div><button type="button" class="tsp-module-refresh" data-tsp-refresh="production"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+                <div class="tsp-module-kpis" id="production-kpis"></div>
+                <form id="production-entry-form" class="tsp-module-form">
+                    <label>ថ្ងៃ <input id="production-date" type="date" required></label><label>Factory <input id="production-factory" type="text" placeholder="Factory" required></label><label>Section / Line <input id="production-line" type="text" placeholder="Section ឬ Line" required></label><label>Style <input id="production-style" type="text" placeholder="Style"></label><label>Target (pcs) <input id="production-target" type="number" min="0" step="1" required placeholder="0"></label><label>Actual (pcs) <input id="production-actual" type="number" min="0" step="1" required placeholder="0"></label><button type="submit" class="tsp-module-primary"><i class="fa-solid fa-plus"></i> Save Production</button>
+                </form>
+                <div class="tsp-module-toolbar"><input id="production-search" type="search" placeholder="ស្វែងរក Factory, Line, Style..."><span id="production-count"></span></div><div class="tsp-module-table-wrap"><table class="tsp-module-table"><thead><tr><th>Date</th><th>Factory</th><th>Section / Line</th><th>Style</th><th>Target</th><th>Actual</th><th>Achievement</th><th>Action</th></tr></thead><tbody id="production-table-body"></tbody></table></div>
+                <p class="tsp-module-note">ទិន្នន័យ Production ដែលបញ្ចូលនៅទីនេះ រក្សាទុកក្នុង Browser/ឧបករណ៍នេះប៉ុណ្ណោះ។ មិនទាន់ Sync រវាង Computer និង Phone ទេ។</p>
+            </section>
+            <section id="workers-page" class="page-content tsp-factory-page" style="display:none;" aria-label="Worker Management">
+                <div class="tsp-module-heading"><div><span class="tsp-module-eyebrow">PEOPLE & SKILLS</span><h2><i class="fa-solid fa-users-gear"></i> Worker Management</h2><p>បញ្ជីកម្មករដែលចុះឈ្មោះ និង Sewer ដែលមានក្នុង Time Study</p></div><button type="button" class="tsp-module-refresh" data-tsp-refresh="workers"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+                <div class="tsp-module-kpis" id="workers-kpis"></div>
+                <form id="worker-entry-form" class="tsp-module-form"><label>Worker ID <input id="worker-id" type="text" placeholder="ឧ. S001"></label><label>ឈ្មោះកម្មករ <input id="worker-name" type="text" required placeholder="ឈ្មោះ Sewer"></label><label>Section / Line <input id="worker-section" type="text" placeholder="Section ឬ Line"></label><label>ជំនាញ / Process <input id="worker-skill" type="text" placeholder="Process ដែលធ្វើបាន"></label><button type="submit" class="tsp-module-primary"><i class="fa-solid fa-user-plus"></i> Add Worker</button></form>
+                <div class="tsp-module-toolbar"><input id="worker-search" type="search" placeholder="ស្វែងរក Worker ID, ឈ្មោះ, Process..."><span id="worker-count"></span></div><div class="tsp-module-table-wrap"><table class="tsp-module-table"><thead><tr><th>Worker ID</th><th>ឈ្មោះ</th><th>Section / Line</th><th>ជំនាញ</th><th>Process ក្នុង Time Study</th><th>សកម្មភាព</th></tr></thead><tbody id="worker-table-body"></tbody></table></div>
+                <p class="tsp-module-note">Worker registry ថ្មីនេះជាបញ្ជីគ្រប់គ្រងបន្ថែម មិនកែ ឬលុប Time Study ចាស់ទេ។ រក្សាទុកក្នុង Browser/ឧបករណ៍នេះប៉ុណ្ណោះ។</p>
+            </section>
+            <section id="efficiency-page" class="page-content tsp-factory-page" style="display:none;" aria-label="Efficiency and Performance">
+                <div class="tsp-module-heading"><div><span class="tsp-module-eyebrow">TIME STUDY ANALYTICS</span><h2><i class="fa-solid fa-gauge-high"></i> Efficiency & Performance</h2><p>វិភាគ CT, SMV, PFM និង Output តាម Process និង Sewer</p></div><button type="button" class="tsp-module-refresh" data-tsp-refresh="efficiency"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+                <div class="tsp-module-kpis" id="efficiency-kpis"></div><div class="tsp-module-toolbar"><input id="efficiency-search" type="search" placeholder="ស្វែងរក Process, Sewer, Style..."><span id="efficiency-count"></span></div><div class="tsp-module-table-wrap"><table class="tsp-module-table"><thead><tr><th>Factory</th><th>Section</th><th>Style / Day</th><th>Process</th><th>Sewer</th><th>SMV (sec)</th><th>CT Avg (sec)</th><th>PFM</th><th>Output (pcs/hr)</th></tr></thead><tbody id="efficiency-table-body"></tbody></table></div>
+                <p class="tsp-module-note">PFM/CT/Output គណនាពី Saved Time Study ដែលមានស្រាប់។ លទ្ធផលនេះជាការវិភាគ Time Study មិនមែនជាការវាស់ Actual Production ដោយស្វ័យប្រវត្តិទេ។</p>
+            </section>
+            <section id="line-balance-page" class="page-content tsp-factory-page" style="display:none;" aria-label="Line Balancing">
+                <div class="tsp-module-heading"><div><span class="tsp-module-eyebrow">PROCESS BALANCING</span><h2><i class="fa-solid fa-scale-balanced"></i> Line Balancing</h2><p>រក Bottleneck និងប្រៀបធៀប CT សរុបតាម Sewer</p></div><button type="button" class="tsp-module-refresh" data-tsp-refresh="balance"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+                <div class="tsp-module-toolbar tsp-balance-toolbar"><label>Takt Time (sec) <input id="line-balance-takt" type="number" min="0" step="0.1" placeholder="កំណត់ Takt"></label><button type="button" class="tsp-module-primary" id="line-balance-save-takt">Save Takt</button><span id="line-balance-takt-hint"></span></div><div class="tsp-module-kpis" id="line-balance-kpis"></div><div class="tsp-module-table-wrap"><table class="tsp-module-table"><thead><tr><th>Seq</th><th>Sewer / Operator</th><th>Processes</th><th>Total CT (sec)</th><th>Output (pcs/hr)</th><th>vs Takt</th><th>Status</th></tr></thead><tbody id="line-balance-table-body"></tbody></table></div>
+                <p class="tsp-module-note">គណនាតាម Saved Time Study និង CT សរុបរបស់ Sewer នីមួយៗ។ Takt Time គឺតម្លៃដែលអ្នកកំណត់។</p>
+            </section>
+            <section id="daily-report-page" class="page-content tsp-factory-page" style="display:none;" aria-label="Daily Report and Activity">
+                <div class="tsp-module-heading"><div><span class="tsp-module-eyebrow">DAILY REVIEW</span><h2><i class="fa-solid fa-clipboard-list"></i> Daily Report & Activity</h2><p>សង្ខេប Time Study, Production និងប្រវត្តិសកម្មភាពប្រចាំថ្ងៃ</p></div><button type="button" class="tsp-module-refresh" data-tsp-refresh="report"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+                <div class="tsp-module-toolbar tsp-report-toolbar"><label>ជ្រើសថ្ងៃ <input id="daily-report-date" type="date"></label><button type="button" class="tsp-module-primary" id="daily-report-export"><i class="fa-solid fa-download"></i> Export CSV</button></div><div class="tsp-module-kpis" id="daily-report-kpis"></div><h3 class="tsp-module-subheading">Time Study ក្នុងថ្ងៃដែលបានជ្រើស</h3><div class="tsp-module-table-wrap"><table class="tsp-module-table"><thead><tr><th>Factory</th><th>Section</th><th>Style / Day</th><th>Process</th><th>Sewer</th><th>CT (sec)</th><th>PFM</th></tr></thead><tbody id="daily-report-study-body"></tbody></table></div><h3 class="tsp-module-subheading">Recent Activity</h3><div class="tsp-module-table-wrap"><table class="tsp-module-table"><thead><tr><th>Time</th><th>Activity</th><th>File / Item</th><th>Details</th><th>User</th></tr></thead><tbody id="daily-report-activity-body"></tbody></table></div>
+                <p class="tsp-module-note">របាយការណ៍បង្ហាញទិន្នន័យដែលមានក្នុង Browser នេះ។ Activity history អាចមានកម្រិតតាមប្រភេទសកម្មភាពដែលប្រព័ន្ធបានកត់ត្រា។</p>
+            </section>
+        </div>
+</div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Custom Modern Modal for Alerts & Confirms -->
+    <div id="custom-modal" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal-box">
+            <div class="custom-modal-icon" id="modal-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="modal-title">ការជូនដំណឹង</h3>
+            <p id="modal-message">សារជូនដំណឹងនឹងបង្ហាញនៅទីនេះ...</p>
+            <div class="custom-modal-buttons">
+                <button id="modal-btn-cancel" class="modal-btn modal-btn-secondary" style="display: none;">No</button>
+                <button id="modal-btn-ok" class="modal-btn modal-btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 MODAL សម្រាប់ Edit Data (Dynamic Inputs តាមក្បាលតារាង Excel ទាំងអស់) -->
+    <div id="timeObserveEditModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10060; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 850px; max-width: 95%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; max-height: 85vh;">
+            
+            <!-- Modal Header -->
+            <div style="background: #2563eb; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="timeObserveEditModalTitle" style="margin: 0; font-size: 16px;"><i class="fa-solid fa-table-cells"></i> កែសម្រួលទិន្នន័យ និងតារាង Excel</h3>
+                <button onclick="closeTimeObserveEditModal()" style="background: none; border: none; color: #fff; font-size: 18px; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Modal Body (Dynamic Inputs Container) -->
+            <div style="padding: 25px; overflow-y: auto; flex: 1;">
+                <div id="dynamic-edit-inputs-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <!-- ប្រអប់ Input នឹងបង្ហាញនៅទីនេះដោយស្វ័យប្រវត្តិតามក្បាលតារាង Excel ទាំងអស់ -->
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="background: #f8fafc; padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0;">
+                <button onclick="closeTimeObserveEditModal()" aria-label="ថយក្រោយ និងបិទផ្ទាំងកែទិន្នន័យ" style="padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #475569;"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> ថយក្រោយ</button>
+                <button id="timeObserveEditSaveBtn" onclick="saveTimeObserveEdit()" style="padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-floppy-disk"></i> រក្សាទុក (Save)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libraries and Main JS -->
+    <!-- SweetAlert2 CDN -->
+    <script>
+    // Load large Excel metadata from IndexedDB before starting the main app.
+    (function () {
+      const DB_NAME = 'TimeStudyProLargeStorage';
+      const DB_VERSION = 1;
+      const KEYS = ['uploadedExcelFiles', 'uploadedExcelTrash'];
+      function openDB() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+          request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('records')) request.result.createObjectStore('records'); };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+      function getValue(db, key) {
+        return new Promise((resolve, reject) => { const r = db.transaction('records').objectStore('records').get(key); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
+      }
+      // Read all file records in one IndexedDB transaction instead of opening one
+      // transaction per record. This materially reduces startup overhead for large libraries.
+      function getValues(db, keys) {
+        if (!keys.length) return Promise.resolve([]);
+        return new Promise((resolve, reject) => {
+          let tx;
+          try {
+            tx = db.transaction('records', 'readonly');
+            const store = tx.objectStore('records');
+            const values = new Array(keys.length);
+            let remaining = keys.length;
+            keys.forEach((key, index) => {
+              const request = store.get(key);
+              request.onsuccess = () => { values[index] = request.result; if (--remaining === 0) resolve(values); };
+              request.onerror = () => reject(request.error || tx.error);
+            });
+            tx.onerror = tx.onabort = () => reject(tx.error || new Error('IndexedDB read failed'));
+          } catch (error) { reject(error); }
+        });
+      }
+      function putValue(db, key, value) {
+        return new Promise((resolve, reject) => { const tx = db.transaction('records', 'readwrite'); tx.objectStore('records').put(value, key); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
+      }
+      function startMainScript() {
+        const script = document.createElement('script'); script.src = 'script.js'; document.body.appendChild(script);
+      }
+      // Ask the browser to keep this app's local database persistent where supported.
+      // This reduces automatic eviction risk, but cannot override device/browser quota limits.
+      async function requestPersistentStorage() {
+        try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {}
+      }
+      // Persistent-storage permission is best-effort and must not block first paint.
+      requestPersistentStorage();
+      openDB().then(db => {
+        window.tspLargeStorageDB = db;
+        window.tspLargeStorageCache = {};
+        // Hydrate uploaded-file metadata in the background instead of blocking script.js startup.
+        // The app shell can initialize immediately; data-dependent views refresh on the ready event.
+        window.tspLargeStorageReady = (async () => {
+          try {
+            for (const key of KEYS) {
+          let value = [];
+          // New format: a lightweight manifest points to separately stored records.
+          let manifest = await getValue(db, key + ':manifest');
+          if (Array.isArray(manifest)) {
+            const items = await getValues(db, manifest);
+            value = items.filter(item => item && typeof item === 'object');
+          } else {
+            // One-time migration from the old single-array format.
+            const oldDbValue = await getValue(db, key);
+            let oldLocalValue = null;
+            try { oldLocalValue = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) {}
+            const legacy = Array.isArray(oldDbValue) ? oldDbValue : (Array.isArray(oldLocalValue) ? oldLocalValue : []);
+            value = legacy;
+            if (legacy.length) {
+              await new Promise((resolve, reject) => {
+                const tx = db.transaction('records', 'readwrite');
+                const store = tx.objectStore('records');
+                const prefix = key + ':';
+                const keys = legacy.map((item, i) => prefix + encodeURIComponent(String((item && (item.fileHash || item.id || (item.name && item.uploadedAt ? item.name + '|' + item.uploadedAt : ''))) || ('record-' + i))));
+                legacy.forEach((item, i) => store.put(item, keys[i]));
+                store.put(keys, key + ':manifest');
+                tx.oncomplete = resolve; tx.onerror = tx.onabort = () => reject(tx.error);
+              });
+            } else {
+              await putValue(db, key + ':manifest', []);
+            }
+          }
+              window.tspLargeStorageCache[key] = value;
+              try { localStorage.removeItem(key); } catch (_) {}
+            }
+            try { window.dispatchEvent(new CustomEvent('tsp:large-storage-ready')); } catch (_) {}
+            return true;
+          } catch (err) {
+            console.error('IndexedDB metadata hydration failed; existing browser storage remains available.', err);
+            return false;
+          }
+        })();
+        startMainScript();
+      }).catch(err => {
+        console.error('IndexedDB unavailable; using existing browser storage.', err);
+        window.tspLargeStorageDB = null;
+        window.tspLargeStorageCache = null;
+        window.tspLargeStorageReady = Promise.resolve(false);
+        startMainScript();
+      });
+    })();
+    </script>
+    <!-- <script src="dashboard-analytics.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- <script src="user-management.js"></script> -->
+
+<script id="tsp-global-loading-controller">
+(function installTspGlobalLoading(){
+  const overlay = document.getElementById('tsp-global-loading');
+  const title = document.getElementById('tsp-loading-title');
+  const message = document.getElementById('tsp-loading-message');
+  const networkStatus = document.getElementById('tsp-network-status');
+  if (!overlay || overlay.dataset.ready === '1') return;
+  overlay.dataset.ready = '1';
+  let actionTimer = null;
+  let networkTimer = null;
+  let startupFinished = false;
+  let pageLoaded = document.readyState === 'complete';
+  let mainAppReady = false;
+  let actionStartedAt = 0;
+  let resultSnapshot = new Map();
+  const lastSaveClick = new WeakMap();
+
+  function showLoading(heading, detail) {
+    if (title && heading) title.textContent = heading;
+    if (message && detail) message.textContent = detail;
+    overlay.classList.remove('tsp-loading-hidden');
+    document.body.classList.add('tsp-global-busy');
+  }
+  function hideLoading() {
+    overlay.classList.add('tsp-loading-hidden');
+    document.body.classList.remove('tsp-global-busy');
+  }
+  function showNetwork(text, online) {
+    if (!networkStatus) return;
+    networkStatus.textContent = text;
+    networkStatus.classList.toggle('tsp-network-online', !!online);
+    networkStatus.classList.add('tsp-network-visible');
+    clearTimeout(networkTimer);
+    if (online) networkTimer = setTimeout(() => networkStatus.classList.remove('tsp-network-visible'), 3500);
+  }
+  function finishStartup(force) {
+    if (startupFinished) return;
+    // The main app script is injected after IndexedDB is prepared. Window load alone
+    // is not proof that TimeStudyPro itself has finished initializing.
+    if (!force && !mainAppReady) return;
+    startupFinished = true;
+    hideLoading();
+    if (!navigator.onLine) showNetwork('Internet មិនមានការតភ្ជាប់ — មុខងារដែលត្រូវការ Internet អាចមិនដំណើរការ។', false);
+  }
+  window.tspMarkStartupReady = function(){ mainAppReady = true; finishStartup(false); };
+
+  // Do not wait for every CDN/window-load event once the main app is ready.
+  if (!pageLoaded) window.addEventListener('load', () => { pageLoaded = true; finishStartup(false); }, { once:true });
+  else finishStartup(false);
+  // If initialization is still running, release the blocking overlay after 2.5 seconds.
+  setTimeout(() => {
+    if (!startupFinished) {
+      finishStartup(true);
+      if (!navigator.onLine) showNetwork('Internet មិនមានការតភ្ជាប់។ មុខងារមួយចំនួនអាចមិនដំណើរការ។', false);
+    }
+  }, 2500);
+
+  window.addEventListener('offline', () => showNetwork('Internet បានផ្ដាច់ — សូមពិនិត្យការតភ្ជាប់។', false));
+  window.addEventListener('online', () => showNetwork('Internet បានភ្ជាប់ឡើងវិញ។', true));
+
+  // Navigation between local views is immediate. Do not show the global overlay for Menu clicks;
+  // the artificial 500–650ms delay made local navigation feel slower than it really is.
+
+  // For save/submit actions, show loading only after the click handler has had a
+  // chance to validate or open a confirmation dialog. Local Menu navigation stays instant.
+  document.addEventListener('click', event => {
+    const button = event.target.closest('button, input[type="submit"]');
+    if (!button || button.disabled) return;
+    const text = ((button.innerText || button.value || '') + ' ' + (button.id || '') + ' ' + (button.getAttribute('aria-label') || '')).toLowerCase();
+    const isSave = /save|រក្សាទុក|submit|update|កែប្រែ|confirm save|បញ្ចូលទិន្នន័យ/.test(text) || /ts-save-btn|timeobserveeditsavebtn|tsp-user-save|tsp-profile-save/.test(text);
+    if (!isSave) return;
+    // These controls perform an immediate local action or only build a preview/print view.
+    // Their own status/toast feedback is more accurate than a blocking global overlay.
+    // Workspace preferences (Theme / Zoom / Text Size) are immediate local UI changes.
+    // Never cover the whole application with the global loading overlay for this action.
+    if (['clone-source-save-preview', 'sll-save', 'line-balance-save-takt', 'tsp-workspace-save'].includes(button.id) || /window\.print\s*\(/.test(button.getAttribute('onclick') || '')) return;
+    const form = button.form || button.closest('form');
+    // Invalid forms should show their normal validation message, not a blocking overlay.
+    if (form && typeof form.checkValidity === 'function' && !form.checkValidity()) return;
+    const now = Date.now();
+    const last = lastSaveClick.get(button) || 0;
+    if (now - last < 900) { event.preventDefault(); event.stopImmediatePropagation(); return; }
+    lastSaveClick.set(button, now);
+    if (actionStartedAt) { event.preventDefault(); event.stopImmediatePropagation(); return; }
+    resultSnapshot = new Map();
+    document.querySelectorAll('.swal2-container, .custom-modal-overlay, .toast, .toast-message, .tsp-toast, [role="alert"]').forEach((el, i) => { resultSnapshot.set(el, (el.textContent || '').trim() + '|' + (el.className || '') + '|' + i); });
+    // Let synchronous validation, confirmation, and success feedback finish first.
+    setTimeout(() => {
+      if (actionStartedAt || overlay.classList.contains('tsp-loading-hidden') === false) return;
+      const resultVisible = Array.from(document.querySelectorAll('.swal2-container.swal2-shown, .custom-modal-overlay, .toast, .toast-message, .tsp-toast, [role="alert"]')).some((el, i) => {
+        const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+        const visible = r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none';
+        const fingerprint = (el.textContent || '').trim() + '|' + (el.className || '') + '|' + i;
+        return visible && (!resultSnapshot.has(el) || resultSnapshot.get(el) !== fingerprint);
+      });
+      if (resultVisible) return;
+      actionStartedAt = Date.now();
+      showLoading('កំពុងរក្សាទុកទិន្នន័យ...', 'សូមរង់ចាំរហូតដល់ការរក្សាទុកបញ្ចប់។');
+      clearTimeout(actionTimer);
+      actionTimer = setTimeout(() => { actionStartedAt = 0; hideLoading(); }, 15000);
+    }, 0);
+  }, true);
+
+  // Dismiss as soon as the existing app reports success/error through a modal or toast.
+  const observer = new MutationObserver(() => {
+    if (overlay.classList.contains('tsp-loading-hidden') || !actionStartedAt) return;
+    const results = Array.from(document.querySelectorAll('.swal2-container.swal2-shown, .custom-modal-overlay, .toast, .toast-message, .tsp-toast, [role="alert"]'));
+    const newResultVisible = results.some((el, i) => {
+      const r = el.getBoundingClientRect();
+      const visible = r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none';
+      const fingerprint = (el.textContent || '').trim() + '|' + (el.className || '') + '|' + i;
+      return visible && (!resultSnapshot.has(el) || resultSnapshot.get(el) !== fingerprint);
+    });
+    if (newResultVisible) { clearTimeout(actionTimer); actionStartedAt = 0; setTimeout(hideLoading, 120); }
+  });
+  observer.observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class','style','hidden'] });
+
+  // Existing Excel upload already has a real file-reading progress bar; keep that detailed progress UI intact.
+  document.addEventListener('change', event => {
+    const input = event.target;
+    if (input && input.matches('input[type="file"]') && input.files && input.files.length) {
+      const progress = document.getElementById('upload-progress-wrap');
+      if (progress) progress.hidden = false;
+    }
+  }, true);
+
+  window.tspShowGlobalLoading = showLoading;
+  window.tspHideGlobalLoading = function(){ clearTimeout(actionTimer); actionStartedAt = 0; hideLoading(); };
+  window.tspBeginLoadingAction = function(heading, detail, timeoutMs){ actionStartedAt = Date.now(); resultSnapshot = new Map(); showLoading(heading || 'កំពុងដំណើរការ...', detail || 'សូមរង់ចាំបន្តិច។'); clearTimeout(actionTimer); actionTimer = setTimeout(() => { actionStartedAt = 0; hideLoading(); }, Number(timeoutMs) > 0 ? Number(timeoutMs) : 60000); };
+  window.tspEndLoadingAction = function(){ clearTimeout(actionTimer); actionStartedAt = 0; hideLoading(); };
+})();
+</script>
+
+
+<script id="tsp-v160-mobile-storage-row">
+(function(){
+  const search = document.querySelector('.uploaded-file-search-wrap');
+  const summary = document.querySelector('.upload-storage-summary');
+  const toolbar = document.querySelector('.uploaded-files-toolbar');
+  if (!search || !summary || !toolbar) return;
+  const originalNext = search.nextSibling;
+  function placeSearch(){
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      if (search.parentElement !== summary) summary.appendChild(search);
+    } else if (search.parentElement !== toolbar) {
+      if (originalNext && originalNext.parentNode === toolbar) toolbar.insertBefore(search, originalNext);
+      else toolbar.insertBefore(search, toolbar.firstChild);
+    }
+  }
+  placeSearch();
+  window.addEventListener('resize', placeSearch, {passive:true});
+})();
+</script>
+
+<script id="tsp-v161-mobile-upload-controls-row">
+(function(){
+  const toolbar = document.querySelector('.uploaded-files-toolbar');
+  const toggle = document.querySelector('.upload-view-toggle');
+  const management = document.querySelector('.upload-management-toolbar');
+  if (!toolbar || !toggle || !management) return;
+  const originalParent = toggle.parentNode;
+  const originalNext = toggle.nextSibling;
+  function arrange(){
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      if (toggle.parentElement !== toolbar) toolbar.insertBefore(toggle, toolbar.firstChild);
+    } else if (toggle.parentElement !== originalParent) {
+      if (originalNext && originalNext.parentNode === originalParent) originalParent.insertBefore(toggle, originalNext);
+      else originalParent.insertBefore(toggle, originalParent.firstChild);
+    }
+  }
+  arrange();
+  window.addEventListener('resize', arrange, {passive:true});
+})();
+</script>
+
+
+<script id="tsp-v186-desktop-sidebar-toggle">
+(function(){
+  const btn = document.getElementById('tsp-sidebar-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    const hidden = document.body.classList.toggle('tsp-sidebar-hidden');
+    btn.setAttribute('aria-pressed', String(hidden));
+    btn.setAttribute('aria-label', hidden ? 'បង្ហាញ Menu Sidebar' : 'លាក់ Menu Sidebar');
+    btn.title = hidden ? 'បង្ហាញ Menu Sidebar' : 'លាក់ Menu Sidebar';
+    const icon = btn.querySelector('i');
+    if (icon) icon.className = hidden ? 'fa-solid fa-bars' : 'fa-solid fa-bars-staggered';
+  });
+})();
+</script>
+
+</body>
+</html>
